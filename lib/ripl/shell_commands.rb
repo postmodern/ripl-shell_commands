@@ -82,7 +82,12 @@ module Ripl
       old_pwd = Dir.pwd
 
       new_cwd = if arguments.empty?
-                  Config::HOME
+                  unless ENV['HOME']
+                    warn "cd: HOME not set"
+                    return false
+                  end
+
+                  ENV['HOME']
                 elsif arguments.first == '-'
                   unless ENV['OLDPWD']
                     warn 'cd: OLDPWD not set'
