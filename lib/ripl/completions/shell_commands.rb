@@ -3,6 +3,13 @@ complete(:on => Ripl::ShellCommands::PATTERN) do |cmd|
   glob   = "#{name}*"
   paths  = Set[]
 
+  # search through the BUILTIN command names
+  Ripl::ShellCommands::BUILTIN.each do |command|
+    if command.start_with?(name)
+      paths << "!#{command}"
+    end
+  end
+
   # search through $PATH for similar program names
   Ripl::ShellCommands::PATHS.each do |dir|
     Dir.glob(File.join(dir,glob)) do |path|
