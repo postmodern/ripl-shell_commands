@@ -1,5 +1,3 @@
-require 'ripl/shell_commands/builtin'
-
 require 'set'
 require 'shellwords'
 require 'ripl'
@@ -19,8 +17,8 @@ module Ripl
       end
     end
 
-    # Regexp to recognize `!commands`.
-    PATTERN = /^![a-zA-Z][a-zA-Z0-9\._-]*/
+    # Builtin commands
+    BUILTIN = Set['cd', 'export']
 
     # Blacklist of known commands that conflict with Ruby keywords.
     BLACKLIST = Set[
@@ -29,6 +27,9 @@ module Ripl
       'print', 'proc', 'puts', 'raise', 'require', 'true', 'undef',
       'unless', 'until', 'warn', 'while'
     ]
+
+    # Regexp to recognize `!commands`.
+    PATTERN = /^![a-zA-Z][a-zA-Z0-9\._-]*/
 
     #
     # Dynamically execute shell commands, instead of Ruby.
@@ -42,30 +43,17 @@ module Ripl
         name, arguments = ShellCommands.parse(command)
 
         unless BLACKLIST.include?(name)
-          if ShellCommands::Builtin.singleton_class.method_defined?(name)
+          if BUILTIN.include?(name)
             arguments ||= []
 
-            return ShellCommands::Builtin.send(name,*arguments)
-          elsif ShellCommands.command?(name)
+            return ShellCommands.send(name,*arguments)
+          elsif EXECUTABLES[name]
             return ShellCommands.exec(name,*arguments)
           end
         end
       end
 
       super(input)
-    end
-
-    #
-    # Default command which executes a command in the shell.
-    #
-    # @param [Array<String>] arguments
-    #   The arguments of the command.
-    #
-    # @return [Boolean]
-    #   Specifies whether the command exited successfully.
-    #
-    def self.exec(*arguments)
-      system(Shellwords.shelljoin(arguments))
     end
 
     #
@@ -100,6 +88,70 @@ module Ripl
     #
     def self.executable?(path)
       File.file?(path) && File.executable?(path)
+    end
+
+    #
+    # Default command which executes a command in the shell.
+    #
+    # @param [Array<String>] arguments
+    #   The arguments of the command.
+    #
+    # @return [Boolean]
+    #   Specifies whether the command exited successfully.
+    #
+    def self.exec(*arguments)
+      system(Shellwords.shelljoin(arguments))
+    end
+
+    #
+    # Equivalent of the `cd` command, using `Dir.chdir`.
+    #
+    # @param [Array<String>] arguments
+    #   The arguments of the command.
+    #
+    # @return [Boolean]
+    #   Specifies whether the directory change was successful.
+    #
+    def self.cd(*arguments)
+      old_pwd = Dir.pwd
+
+      new_cwd = if arguments.empty?
+                  unless ENV['HOME']
+                    warn "cd: HOME not set"
+                    return false
+                  end
+
+                  ENV['HOME']
+                elsif arguments.first == '-'
+                  unless ENV['OLDPWD']
+                    warn 'cd: OLDPWD not set'
+                    return false
+                  end
+
+                  ENV['OLDPWD']
+                else
+                  arguments.first
+                end
+
+      Dir.chdir(new_cwd)
+      ENV['OLDPWD'] = old_pwd
+      return true
+    end
+
+    #
+    # Equivalent of the `export` or `set` commands.
+    #
+    # @param [Array<String>] arguments
+    #   The arguments of the command.
+    #
+    # @return [true]
+    #
+    def self.export(*arguments)
+      arguments.each do |pair|
+        name, value = pair.split('=',2)
+
+        ENV[name] = value
+      end
     end
   end
 end
