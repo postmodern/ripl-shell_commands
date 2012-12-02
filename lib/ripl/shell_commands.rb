@@ -1,3 +1,5 @@
+require 'ripl'
+
 require 'set'
 require 'shellwords'
 
