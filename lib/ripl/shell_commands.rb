@@ -100,7 +100,7 @@ module Ripl
     #   Specifies whether the command exited successfully.
     #
     def self.exec(*arguments)
-      system(Shellwords.shelljoin(arguments))
+      system(arguments.join(' '))
     end
 
     #
