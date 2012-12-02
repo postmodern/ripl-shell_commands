@@ -117,6 +117,10 @@ describe Ripl::ShellCommands do
       Dir.pwd.should == dir
     end
 
+    it "should update ENV['PWD']" do
+      ENV['PWD'].should == dir
+    end
+
     it "should update ENV['OLDPWD']" do
       ENV['OLDPWD'].should_not == old
     end

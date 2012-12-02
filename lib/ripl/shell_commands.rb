@@ -134,6 +134,8 @@ module Ripl
                 end
 
       Dir.chdir(new_cwd)
+
+      ENV['PWD']    = Dir.pwd
       ENV['OLDPWD'] = old_pwd
       return true
     end
