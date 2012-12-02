@@ -127,7 +127,7 @@ module Ripl
     def parse_command(command)
       # evaluate embedded Ruby expressions
       command = command.gsub(/\#\{[^\}]*\}/) do |expression|
-        eval(expression[2..-2],Ripl.config[:binding]).to_s.dump
+        eval(expression[2..-2],Ripl.shell.binding).to_s.dump
       end
 
       arguments = Shellwords.shellsplit(command)
