@@ -32,6 +32,7 @@ A [ripl] plugin that allows inline shell commands.
 
 ## Requirements
 
+* [Ruby] >= 1.9.1
 * [ripl] ~> 0.3
 
 ## Install
@@ -44,4 +45,5 @@ Copyright (c) 2012 Hal Brodigan
 
 See {file:LICENSE.txt} for details.
 
+[Ruby]: http://www.ruby-lang.org/
 [ripl]: https://github.com/cldwalker/ripl#readme
