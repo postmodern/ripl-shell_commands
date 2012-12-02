@@ -1,0 +1,16 @@
+name: ripl-shell_commands
+version: 0.1.0
+summary: Ripl plugin that allows inline shell commands
+description: A ripl plugin that allows inline shell commands in the Ripl Shell.
+license: MIT
+authors: Postmodern
+email: postmodern.mod3@gmail.com
+homepage: https://github.com/postmodern/ripl-shell_commands#readme
+
+dependencies:
+  ripl: ~> 0.3
+
+development_dependencies:
+  rspec: ~> 2.4
+  rubygems-tasks: ~> 0.2
+  yard: ~> 0.8
