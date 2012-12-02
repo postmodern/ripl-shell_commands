@@ -149,11 +149,19 @@ module Ripl
     # @return [true]
     #
     def self.export(*arguments)
-      arguments.each do |pair|
-        name, value = pair.split('=',2)
+      unless arguments.empty?
+        arguments.each do |pair|
+          name, value = pair.split('=',2)
 
-        ENV[name] = value
+          ENV[name] = value
+        end
+      else
+        ENV.each do |name,value|
+          puts "#{name}=#{value}"
+        end
       end
+
+      return true
     end
   end
 end
