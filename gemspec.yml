@@ -7,8 +7,6 @@ authors: Postmodern
 email: postmodern.mod3@gmail.com
 homepage: https://github.com/postmodern/ripl-shell_commands#readme
 
-required_ruby_version: ">= 1.9.1"
-
 dependencies:
   ripl: ~> 0.3
 
