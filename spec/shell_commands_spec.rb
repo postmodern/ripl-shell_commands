@@ -46,58 +46,59 @@ describe Ripl::ShellCommands do
     end
   end
 
-  describe "cd" do
-    let(:old)    { Dir.pwd }
-    let(:dir)    { ENV['HOME'] }
-
-    before(:all) { subject.cd(dir) }
-    after(:all)  { Dir.chdir(old)  }
-
-    it "should change the current working directory" do
-      Dir.pwd.should == dir
+  describe "exec" do
+    it "should execute commands" do
+      subject.exec('true').should be_true
     end
 
-    it "should update ENV['OLDPWD']" do
-      ENV['OLDPWD'].should_not == old
+    it "should return the exit status" do
+      subject.exec('false').should be_false
+    end
+  end
+
+  describe "parse" do
+    it "should commands into the command name and additional arguments" do
+      subject.parse("echo foo").should == ['echo', ['foo']]
     end
 
-    context "when given no arguments" do
-      before(:all) { subject.cd }
+    it "should respect single quoted Strings" do
+      subject.parse("echo 'foo bar'").should == ['echo', ['foo bar']]
+    end
 
-      it "should switch back to the current working directory" do
-        Dir.pwd.should == ENV['HOME']
+    it "should respect double quoted Strings" do
+      subject.parse("echo \"foo bar\"").should == ['echo', ['foo bar']]
+    end
+
+    it "should respect escaped characters" do
+      subject.parse("echo foo\\ bar").should == ['echo', ['foo bar']]
+    end
+
+    context "when \#{ } is present" do
+      let(:variable) { 'x'  }
+      let(:value)    { '42' }
+      before(:all) do
+        eval("#{variable} = #{value}",Ripl.shell.binding)
       end
-    end
 
-    context "when given -" do
-      before(:all) { subject.cd('-') }
-
-      it "should switch back to the current working directory" do
-        Dir.pwd.should == old
+      it "should evaluate each embedded expression in the Ripl shell" do
+        subject.parse("echo \#{x}").should == ['echo', [value]]
       end
     end
   end
 
-  describe "export" do
-    context "when given NAME=VALUE pairs" do
-      let(:name)  { 'FOO' }
-      let(:value) { '1' }
+  describe "executable?" do
+    let(:path) { `which dir`.chomp }
 
-      before(:all) { subject.export("#{name}=#{value}") }
-
-      it "should set ENV[NAME] to VALUE" do
-        ENV[name].should == value
-      end
+    it "should not be true for regular files" do
+      subject.executable?('README.md').should be_false
     end
 
-    context "when given NAME= pairs" do
-      let(:name)  { 'BAR' }
+    it "should not be true for directories" do
+      subject.executable?('.').should be_false
+    end
 
-      before(:all) { subject.export("#{name}=") }
-
-      it "should set ENV[NAME] to ''" do
-        ENV[name].should == ''
-      end
+    it "should be true for executables" do
+      subject.executable?(path).should be_true
     end
   end
 end

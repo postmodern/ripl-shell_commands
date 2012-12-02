@@ -1,7 +1,8 @@
-require 'ripl'
+require 'ripl/shell_commands/builtin'
 
 require 'set'
 require 'shellwords'
+require 'ripl'
 
 module Ripl
   #
@@ -13,10 +14,8 @@ module Ripl
 
     # Names and statuses of executables.
     EXECUTABLES = Hash.new do |hash,key|
-      hash[key] = PATHS.any? do |dir|
-        path = File.join(dir,key)
-
-        (File.file?(path) && File.executable?(path))
+      hash[key] = executable?(key) || PATHS.any? do |dir|
+        executable?(File.join(dir,key))
       end
     end
 
@@ -40,14 +39,14 @@ module Ripl
     def loop_eval(input)
       if (@buffer.nil? && input =~ PATTERN)
         command = input[1..-1]
-        name, arguments = parse_command(command)
+        name, arguments = ShellCommands.parse(command)
 
         unless BLACKLIST.include?(name)
-          if ShellCommands.singleton_class.method_defined?(name)
+          if ShellCommands::Builtin.singleton_class.method_defined?(name)
             arguments ||= []
 
-            return ShellCommands.send(name,*arguments)
-          elsif executable?(name)
+            return ShellCommands::Builtin.send(name,*arguments)
+          elsif ShellCommands.command?(name)
             return ShellCommands.exec(name,*arguments)
           end
         end
@@ -70,59 +69,6 @@ module Ripl
     end
 
     #
-    # Equivalent of the `cd` command, using `Dir.chdir`.
-    #
-    # @param [Array<String>] arguments
-    #   The arguments of the command.
-    #
-    # @return [Boolean]
-    #   Specifies whether the directory change was successful.
-    #
-    def self.cd(*arguments)
-      old_pwd = Dir.pwd
-
-      new_cwd = if arguments.empty?
-                  unless ENV['HOME']
-                    warn "cd: HOME not set"
-                    return false
-                  end
-
-                  ENV['HOME']
-                elsif arguments.first == '-'
-                  unless ENV['OLDPWD']
-                    warn 'cd: OLDPWD not set'
-                    return false
-                  end
-
-                  ENV['OLDPWD']
-                else
-                  arguments.first
-                end
-
-      Dir.chdir(new_cwd)
-      ENV['OLDPWD'] = old_pwd
-      return true
-    end
-
-    #
-    # Equivalent of the `export` or `set` commands.
-    #
-    # @param [Array<String>] arguments
-    #   The arguments of the command.
-    #
-    # @return [true]
-    #
-    def self.export(*arguments)
-      arguments.each do |pair|
-        name, value = pair.split('=',2)
-
-        ENV[name] = value
-      end
-    end
-
-    protected
-
-    #
     # Parses a Console command.
     #
     # @param [String] command
@@ -131,7 +77,7 @@ module Ripl
     # @return [String, Array<String>]
     #   The command name and additional arguments.
     #
-    def parse_command(command)
+    def self.parse(command)
       # evaluate embedded Ruby expressions
       command = command.gsub(/\#\{[^\}]*\}/) do |expression|
         eval(expression[2..-2],Ripl.shell.binding).to_s.dump
@@ -146,14 +92,14 @@ module Ripl
     #
     # Determines if an executable exists on the system.
     #
-    # @param [String] name
-    #   The program name or path.
+    # @param [String] path
+    #   The program path.
     #
     # @return [Boolean]
     #   Specifies whether the executable exists.
     #
-    def executable?(name)
-      (File.file?(name) && File.executable?(name)) || EXECUTABLES[name]
+    def self.executable?(path)
+      File.file?(path) && File.executable?(path)
     end
   end
 end
