@@ -1,5 +1,5 @@
 name: ripl-shell_commands
-version: 0.1.0
+version: 0.1.1
 summary: Ripl plugin that allows inline shell commands
 description: A ripl plugin that allows inline shell commands in the Ripl Shell.
 license: MIT
