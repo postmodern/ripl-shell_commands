@@ -83,7 +83,7 @@ module Ripl
                   Config::HOME
                 elsif arguments.first == '-'
                   unless ENV['OLDPWD']
-                    print_warning 'cd: OLDPWD not set'
+                    warn 'cd: OLDPWD not set'
                     return false
                   end
 
