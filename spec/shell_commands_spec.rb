@@ -97,6 +97,10 @@ describe Ripl::ShellCommands do
       subject.exec('true').should be_true
     end
 
+    it "should allow redirecting output" do
+      subject.exec('echo foo >/dev/null').should be_true
+    end
+
     it "should return the exit status" do
       subject.exec('false').should be_false
     end
@@ -154,6 +158,32 @@ describe Ripl::ShellCommands do
       it "should set ENV[NAME] to ''" do
         ENV[name].should == ''
       end
+    end
+  end
+
+  describe "#loop_eval" do
+    subject { Ripl.shell }
+
+    it "should eval normal Ruby input" do
+      subject.eval_input('1 + 1').should == 2
+    end
+
+    it "should execut !commands" do
+      subject.eval_input('!dir >/dev/null').should be_true
+    end
+
+    it "should not execute blacklisted !commands" do
+      subject.eval_input('!true').should be_false
+    end
+
+    it "should not execut !commands within multi-line input" do
+      lines = [
+        '1 + 1',
+        '!true',
+        '2 + 2'
+      ]
+
+      subject.eval_input(lines.join($/)).should == 4
     end
   end
 end
