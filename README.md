@@ -23,11 +23,11 @@ A [ripl] plugin that allows inline shell commands.
     >> @path = '/etc/profile.d/'
     => "/etc/profile.d/"
     >> !ls #{@path}
-    bash_completion.sh  colorls.csh  less.sh		qt.sh
-    chgems.sh	    colorls.sh	 PackageKit.sh		vim.csh
-    chruby.sh	    lang.csh	 qt.csh			vim.sh
-    colorgrep.csh	    lang.sh	 qt-graphicssystem.csh	which2.csh
-    colorgrep.sh	    less.csh	 qt-graphicssystem.sh	which2.sh
+    bash_completion.sh  colorls.csh  less.sh                qt.sh
+    chgems.sh           colorls.sh   PackageKit.sh          vim.csh
+    chruby.sh           lang.csh     qt.csh                 vim.sh
+    colorgrep.csh       lang.sh      qt-graphicssystem.csh  which2.csh
+    colorgrep.sh        less.csh     qt-graphicssystem.sh   which2.sh
     >> true
 
 ## Requirements
